@@ -28,7 +28,8 @@ class Task():
 
     def get_reward(self):
         """Uses current pose of sim to return reward."""
-        reward = 1.-.3*(abs(self.sim.pose[:3] - self.target_pos)).sum()
+        distance = np.linalg.norm(abs(self.sim.pose[:3] - self.target_pos))
+        reward = np.tanh(1 - 0.006*(distance))
         return reward
 
     def step(self, rotor_speeds):

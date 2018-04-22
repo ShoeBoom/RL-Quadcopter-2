@@ -6,7 +6,11 @@ import numpy as np
 
 class DDPG():
     """Reinforcement Learning agent that learns using DDPG."""
-    def __init__(self, task):
+    def __init__(self, task, 
+                 actor_lr=0.001, critic_lr=0.001, 
+                 mu=0, theta=0.15, sigma=0.2, 
+                 gamma=0.99, tau=0.01, 
+                 buffer_size=100000, batch_size=64):
         self.task = task
         self.state_size = task.state_size
         self.action_size = task.action_size
@@ -14,31 +18,31 @@ class DDPG():
         self.action_high = task.action_high
 
         # Actor (Policy) Model
-        self.actor_local = Actor(self.state_size, self.action_size, self.action_low, self.action_high)
-        self.actor_target = Actor(self.state_size, self.action_size, self.action_low, self.action_high)
+        self.actor_local = Actor(self.state_size, self.action_size, self.action_low, self.action_high, actor_lr)
+        self.actor_target = Actor(self.state_size, self.action_size, self.action_low, self.action_high, actor_lr)
 
         # Critic (Value) Model
-        self.critic_local = Critic(self.state_size, self.action_size)
-        self.critic_target = Critic(self.state_size, self.action_size)
+        self.critic_local = Critic(self.state_size, self.action_size, critic_lr)
+        self.critic_target = Critic(self.state_size, self.action_size, critic_lr)
 
         # Initialize target model parameters with local model parameters
         self.critic_target.model.set_weights(self.critic_local.model.get_weights())
         self.actor_target.model.set_weights(self.actor_local.model.get_weights())
 
         # Noise process
-        self.exploration_mu = 0
-        self.exploration_theta = 0.15
-        self.exploration_sigma = 0.2
+        self.exploration_mu = mu
+        self.exploration_theta = theta
+        self.exploration_sigma = sigma
         self.noise = OUNoise(self.action_size, self.exploration_mu, self.exploration_theta, self.exploration_sigma)
 
         # Replay memory
-        self.buffer_size = 100000
-        self.batch_size = 64
+        self.buffer_size = buffer_size
+        self.batch_size = batch_size
         self.memory = ReplayBuffer(self.buffer_size, self.batch_size)
 
         # Algorithm parameters
-        self.gamma = 0.99  # discount factor
-        self.tau = 0.01  # for soft update of target parameters
+        self.gamma = gamma  # discount factor
+        self.tau = tau  # for soft update of target parameters
 
     def reset_episode(self):
         self.noise.reset()
